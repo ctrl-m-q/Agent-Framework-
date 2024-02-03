@@ -5,7 +5,7 @@ openhermes_model = autogen.load_model("openhermes")
 
 config_list = [
     {
-         'api_key': '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'
+         'api_key': ''
 
     }
 ]
