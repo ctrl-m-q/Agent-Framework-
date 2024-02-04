@@ -50,8 +50,8 @@ user_proxy = autogen.UserProxyAgent(
 #agents interfacing
 
 #prompts the research agent to make research according to the researcher's role predefined above
-user_proxy.initiate_chat(researcher,
-                          message=researcher_task
+user_proxy.initiate_chat(messages=researcher_task, 
+                         recipient= researcher
                           )
 response1 = researcher.get_response()
 
