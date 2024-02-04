@@ -1,12 +1,11 @@
 import autogen #importing autogen
-from ollama import openhermes #import ollama library
 
-#initialise openhermes model
-openhermes_model = openhermes
-
+#initialise openhermes model from terminal using litellm --model openhermes, got port base
+topic = "algebra" 
 
 config_list = [
     {
+         'api_base': 'http://0.0.0.0:8000',
          'api_key': ''
 
     }
@@ -42,21 +41,33 @@ examiner_role = "Craft 3 test questions to evaluate the newbie's understanding o
 user_proxy = autogen.UserProxyAgent(
     "user_proxy",
     code_execution_config = {
-        "work_dir": "coding"
+        "work_dir": "coding",
+        "use_docker":False
+
     }
 )
 
 #agents interfacing
 
-user_proxy.initiate_chat(researcher, message=researcher_task,  clear_history=False)
+#prompts the research agent to make research according to the researcher's role predefined above
+user_proxy.initiate_chat(researcher,
+                          message=researcher_task
+                          )
 response1 = researcher.get_response()
-generated_response_r = researcher.a_send(response1, recipient=writer) #generate response from user query
-writer.a_receive(generated_response_r, sender=researcher) #get the generated response from researcher and act on it
-#user_proxy.initiate_chat(writer, message=writer_role, clear_history=False)#prompt the writer agent with task
+
+#generating response from the researcher and sends it to the writer agent
+generated_response_r = researcher.a_send(response1, recipient=writer) 
+writer.a_receive(generated_response_r, sender=researcher) #writer recieves this response
+
+#generating writer's response and sends it to the examiner agent
 response2 = writer.get_response()
-generated_response_w = writer.a_send(response2, recipient=examiner) #generate response from user query
+generated_response_w = writer.a_send(response2, recipient=examiner) 
 examiner.a_receive(generated_response_w, sender=writer)
-user_proxy.initiate_chat(examiner, message=examiner_role, clear_history=False)
+
+#prompts examiner agent with examiner's task
+user_proxy.initiate_chat(examiner,
+                          message=examiner_role
+                          )
 
 
 
