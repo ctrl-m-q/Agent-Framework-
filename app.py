@@ -1,12 +1,15 @@
 import autogen #importing autogen
 
 #initialise openhermes model from terminal using litellm --model openhermes, got port base
-topic = "algebra" 
+
+
+topic = input("Enter topic: ")
 
 config_list = [
     {
-         'api_base': 'http://0.0.0.0:8000',
-         'api_key': ''
+        'model': 'openhermes',
+        'api_base': 'http://0.0.0.0:8000',
+        'api_key': ''
 
     }
 ]
@@ -25,18 +28,20 @@ researcher = autogen.AssistantAgent(
 
 
 writer = autogen.AssistantAgent(
-   name= "writer", llm_config=llm_config
+   name= "writer", 
+   llm_config=llm_config
    )
 
 examiner = autogen.AssistantAgent(
-    name="examiner", llm_config=llm_config
+    name="examiner",
+    llm_config=llm_config
     )
 
 #assign roles to agents
 
-researcher_task = "give ideas for teaching a newbie {}.".format(topic)
-writer_role = "Use the Researcher’s ideas to write a piece of text to explain the {}.".format(topic)
-examiner_role = "Craft 3 test questions to evaluate the newbie's understanding of the created text, along with the correct answers.".format(topic)
+researcher_task = f"give ideas for teaching someone new to the subject {topic}"
+writer_role = f"Use the Researcher’s ideas to write a piece of text to explain the {topic}."
+examiner_role = f"Craft 3 test questions to evaluate the person's understanding of the {topic}, along with the correct answers."
 
 user_proxy = autogen.UserProxyAgent(
     "user_proxy",
@@ -50,14 +55,15 @@ user_proxy = autogen.UserProxyAgent(
 #agents interfacing
 
 #prompts the research agent to make research according to the researcher's role predefined above
-user_proxy.initiate_chat(messages=researcher_task, 
+user_proxy.initiate_chat(messages=[researcher_task], 
                          recipient= researcher
                           )
 response1 = researcher.get_response()
 
 #generating response from the researcher and sends it to the writer agent
-generated_response_r = researcher.a_send(response1, recipient=writer) 
-writer.a_receive(generated_response_r, sender=researcher) #writer recieves this response
+#generated_response_r = researcher.a_send(response1, recipient=writer) 
+writer.initiate_chat(recipient=researcher, message=response1)
+writer.a_receive(response1, sender=researcher) #writer recieves this response
 
 #generating writer's response and sends it to the examiner agent
 response2 = writer.get_response()
@@ -66,7 +72,7 @@ examiner.a_receive(generated_response_w, sender=writer)
 
 #prompts examiner agent with examiner's task
 user_proxy.initiate_chat(examiner,
-                          message=examiner_role
+                          message=[examiner_role]
                           )
 
 

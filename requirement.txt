@@ -1,0 +1,7 @@
+Requirements and dependencies for using this program includes:
+- python version 3.11.5
+- conda
+- litellm for openhermes integration
+- Autogen framework
+
+The program should be compatible with Linus Ubuntu and the latest version of Ollama, as long as the required dependencies are installed.
